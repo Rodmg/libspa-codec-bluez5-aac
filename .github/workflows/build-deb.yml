@@ -13,12 +13,14 @@ jobs:
 
   build-x86_64-trixie:
     runs-on: ubuntu-24.04
+    container:
+      image: debian:trixie-slim
 
     steps:
       - uses: actions/checkout@v6
       - name: Make build script executable
         run: chmod +x build.sh
-      - name: Build Debian package
+      - name: Build Debian package inside Debian Trixie
         run: |
           set -eu
           ./build.sh
@@ -30,12 +32,14 @@ jobs:
 
   build-arm64-trixie:
     runs-on: ubuntu-24.04-arm
+    container:
+      image: debian:trixie-slim
 
     steps:
       - uses: actions/checkout@v6
       - name: Make build script executable
         run: chmod +x build.sh
-      - name: Build Debian package
+      - name: Build Debian package inside Debian Trixie
         run: |
           set -eu
           ./build.sh
