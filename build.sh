@@ -8,16 +8,29 @@ set -euo pipefail
 
 export DEBIAN_FRONTEND=noninteractive
 
-ensure_trixie_components() {
-  for f in /etc/apt/sources.list /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources; do
-    [ -f "$f" ] || continue
-    if grep -qE '^deb .* trixie' "$f" 2>/dev/null; then
-      sed -i -E 's#^(deb\s+\S+\s+\S+\s+(trixie|trixie-updates|trixie-security)\s+main)(\s.*)?$#\1 contrib non-free non-free-firmware#' "$f"
-    fi
-  done
-}
-
-ensure_trixie_components
+# Keep the image's default deb822 source configuration and add the missing components.
+APT_SOURCES="/etc/apt/sources.list.d/debian.sources"
+if [ -f "$APT_SOURCES" ]; then
+  tmp_sources="$(mktemp "${TMPDIR:-/tmp}/debian.sources.XXXXXXXX")"
+  awk '
+    /^Components: / {
+      line = $0
+      if (line !~ /(^|[[:space:]])contrib([[:space:]]|$)/) {
+        line = line " contrib"
+      }
+      if (line !~ /(^|[[:space:]])non-free([[:space:]]|$)/) {
+        line = line " non-free"
+      }
+      if (line !~ /(^|[[:space:]])non-free-firmware([[:space:]]|$)/) {
+        line = line " non-free-firmware"
+      }
+      print line
+      next
+    }
+    { print }
+  ' "$APT_SOURCES" > "$tmp_sources"
+  mv "$tmp_sources" "$APT_SOURCES"
+fi
 
 apt-get update
 apt-get install -y \
