@@ -6,15 +6,6 @@ set -euo pipefail
 
 # ── Preconditions ────────────────────────────────────────────────────────────
 
-need() { command -v "$1" >/dev/null 2>&1 || { echo "$1 is required." >&2; exit 1; }; }
-need apt-get
-need dpkg-deb
-need fakeroot
-need dpkg-architecture
-need dpkg-query
-need wget
-need git
-
 export DEBIAN_FRONTEND=noninteractive
 
 cat > /etc/apt/sources.list <<'EOF'
