@@ -8,11 +8,16 @@ set -euo pipefail
 
 export DEBIAN_FRONTEND=noninteractive
 
-cat > /etc/apt/sources.list <<'EOF'
-deb http://deb.debian.org/debian trixie main contrib non-free non-free-firmware
-deb http://deb.debian.org/debian trixie-updates main contrib non-free non-free-firmware
-deb http://security.debian.org/debian-security trixie-security main contrib non-free non-free-firmware
-EOF
+ensure_trixie_components() {
+  for f in /etc/apt/sources.list /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources; do
+    [ -f "$f" ] || continue
+    if grep -qE '^deb .* trixie' "$f" 2>/dev/null; then
+      sed -i -E 's#^(deb\s+\S+\s+\S+\s+(trixie|trixie-updates|trixie-security)\s+main)(\s.*)?$#\1 contrib non-free non-free-firmware#' "$f"
+    fi
+  done
+}
+
+ensure_trixie_components
 
 apt-get update
 apt-get install -y \
